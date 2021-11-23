@@ -330,7 +330,7 @@ Response Body
 
 **Query Parameters:**
 | 이름 | 타입 | 필수 | 설명 | 검수 | 기본값 |
-|--|--|--|--|--|
+|--|--|--|--|--|--|
 | page | number | | page 기반 페이징 처리 파리미터 | 최소 0 ~ 최대 Long.MAX_VALUE | 0 |
 | size | number | | 출력할 아이템의 갯수 | 최소 1 ~ 최대 5 | 5 |
 | from\_date | date | | 조회 시작 일자 | 형식: yyyy-MM-dd | 조회 종료 일자 (예: 2021-12-01) |
