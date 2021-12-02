@@ -181,7 +181,7 @@ Response Body
 - 사용자의 계좌의 상태가 이미 `DISABLED`인 경우 `400 Bad Request`로 응답합니다.
 - 사용자의 계좌의 잔액이 0원이 아닌 경우 `400 Bad Request`로 응답합니다.
 - 사용자의 계좌의 상태값을 `DISABLED`로 저장합니다.
-- 응답으로 계좌 정보를 내려줍니다.
+- 응답으로 비활성화된 계좌 정보를 내려줍니다.
 
 **URL: DELETE /api/accounts/{id}**
 
@@ -214,7 +214,7 @@ Response Body
 - 계좌를 찾을 수 없을 경우 `404 Not Found`으로 응답합니다.
 - 사용자가 계좌의 소유자가 아닌 경우 `403 Forbidden`으로 응답합니다.
 - 사용자의 계좌가 비활성화 상태인 경우 `400 Bad Request`로 응답합니다.
-- 응답으로 계좌 정보를 내려줍니다.
+- 응답으로 수정된 계좌 정보를 내려줍니다.
 
 **URL: PUT /api/accounts/{id}/transfer-limit**
 
@@ -259,14 +259,17 @@ Response Body
 - 출금 계좌나 입금 계좌가 비활성화 상태인 경우 `400 Bad Request`로 응답합니다.
 - 출금액이 출금 계좌의 잔액보다 많은 경우 `400 Bad Request`로 응답합니다.
 - 이체 금액이 출금 계좌의 1회 이체 한도를 초과할 경우 `400 Bad Request`로 응답합니다.
-- 이체 금액이 출금 계좌의 1일 이체 한도를 초과할 경우 `400 Bad Request`로 응답합니다.
+- 당일 총 이체 금액과 이체 금액의 합이 출금 계좌의 1일 이체 한도를 초과할 경우 `400 Bad Request`로 응답합니다.
+  - 당일 총 이체 금액은 00시 00분 00초 ~ 23시 59분 59초 사이 이체 금액의 총 합을 말합니다.
 - 출금 정보를 `balance_transactions` 테이블에 저장합니다.
   - 타입은 `WITHDRAW`으로 저장합니다.
   - 출금 전 계좌의 잔액을 `before_balance_amount`에 저장합니다.
+  - `note`에 `sender_note`를 저장합니다. `sender_note` 값이 없을 경우 입금 계좌의 고객명을 저장합니다.
 - 출금 계좌의 잔액을 금액만큼 감소시킵니다.
 - 입금 정보를 `balance_transactions` 테이블에 저장합니다.
   - 타입은 `DEPOSIT`으로 저장합니다.
   - 입금 전 계좌의 잔액을 `before_balance_amount`에 저장합니다.
+  - `note`에 `receiver_note` 값을 저장합니다. `receiver_note` 값이 없을 경우 출금 계좌의 고객명을 저장합니다.
 - 입금 계좌의 잔액을 금액만큼 증가시킵니다.
 - `transfers` 테이블에 데이터를 저장합니다.
   - 출금 정보 저장 후 생성된 ID를 `withdraw_id`에 저장합니다.
@@ -276,13 +279,13 @@ Response Body
 **URL: POST /api/transfers/withdraw**
 
 **Request Body:**
-| 이름 | 타입 | 필수 | 설명 | 검수 | 기본값 |
-|--|--|--|--|--|--|
-| sender\_account\_number | string | O | 출금 계좌번호 | 000-00-00000 형식 | |
-| receiver\_account\_number | string | O | 입금 계좌번호 | 000-00-00000 형식 | |
-| amount | number | O | 금액 | 최소 10 이상 | |
-| sender\_note | string | | 내통장표시 | 최소 2글자 ~ 최대 10글자 | 받는분 성함 |
-| receiver\_note | string | | 받는통장표시 | 최소 2글자 ~ 최대 10글자 | 보내는분 성함 |
+| 이름 | 타입 | 필수 | 설명 | 검수 |
+|--|--|--|--|--|
+| sender\_account\_number | string | O | 출금 계좌번호 | 000-00-00000 형식 |
+| receiver\_account\_number | string | O | 입금 계좌번호 | 000-00-00000 형식 |
+| amount | number | O | 금액 | 최소 10 이상 |
+| sender\_note | string | | 내통장표시 | 최소 2글자 ~ 최대 10글자 |
+| receiver\_note | string | | 받는통장표시 | 최소 2글자 ~ 최대 10글자 |
 
 ``` json
 {
@@ -300,7 +303,6 @@ Response Body
   "success": true,
   "response": {
     "id": 1,
-    "user_id": 1,
     "account_id": 1,
     "amount": 10000,
     "before_balance_amount": 10000,
@@ -319,7 +321,7 @@ Response Body
 - 사용자가 계좌의 소유자가 아닌 경우 `403 Forbidden`으로 응답합니다.
 - 사용자의 계좌가 비활성화 상태인 경우 `400 Bad Request`로 응답합니다.
 - `balance_transactions` 테이블에서 거래 내역을 가져옵니다.
-- `page`, `size` 값이 최솟값~최댓값 범위 밖이거나 주어지지 않는다면 기본값으로 대체합니다.
+- `page`, `size` 값이 유효하지 않은 경우 기본값으로 대체합니다.
 - `from_date`, `to_date` 값이 유효하지 않은 경우 기본값으로 대체합니다.
   - `to_date`는 오늘보다 미래일 수 없습니다.
   - `from_date`는 `to_date`보다 미래일 수 없습니다.
@@ -346,7 +348,6 @@ GET /api/accounts/1/transactions?page=0&size=5&from_date=2021-10-01&to_date=2021
   "success": true,
   "response": [{
     "id": 1,
-    "user_id": 1,
     "account_id": 1,
     "amount": 10000,
     "before_balance_amount": 0,

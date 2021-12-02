@@ -8,9 +8,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import lombok.Getter;
-
-@Getter
 public class CreateUserRequest {
   @Size(min = 2, max = 10, message = "이름은 최소 2글자에서 최대 10글자까지 가능합니다.")
   @NotBlank(message = "이름은 필수입니다.")
@@ -26,4 +23,20 @@ public class CreateUserRequest {
 
   @NotNull(message = "생년월일은 필수입니다.")
   LocalDate birthday;
+
+  public String getName() {
+    return name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getPhone() {
+    return phone;
+  }
+
+  public LocalDate getBirthday() {
+    return birthday;
+  }
 }
