@@ -9,16 +9,15 @@ import com.naver.line.demo.common.exceptions.NotFoundException;
 import com.naver.line.demo.common.exceptions.UnauthorizedException;
 import com.naver.line.demo.user.entities.User;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
   
   @Transactional(readOnly = true)
   public Optional<User> findById(int id) {
@@ -45,6 +44,7 @@ public class UserService {
     checkNotNull(name, "이름은 필수입니다.");
     checkNotNull(email, "이메일은 필수입니다.");
     checkNotNull(phone, "전화번호는 필수입니다.");
+    checkNotNull(birthday, "생년월일은 필수입니다.");
 
     User user = new User(name, email, phone, birthday);
 
