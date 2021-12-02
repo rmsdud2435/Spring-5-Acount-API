@@ -9,16 +9,18 @@ import com.naver.line.demo.common.exceptions.NotFoundException;
 import com.naver.line.demo.common.exceptions.UnauthorizedException;
 import com.naver.line.demo.user.entities.User;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
 
-  @Autowired
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
   
+  public UserService(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+
   @Transactional(readOnly = true)
   public Optional<User> findById(int id) {
     return userRepository.findById(id);

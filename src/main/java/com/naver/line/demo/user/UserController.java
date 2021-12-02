@@ -11,7 +11,6 @@ import com.naver.line.demo.user.dto.UserDto;
 import com.naver.line.demo.user.entities.User;
 import com.naver.line.demo.utils.ApiUtils.ApiResult;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,9 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
 
-  @Autowired
-  private UserService userService;
+  private final UserService userService;
   
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
+
   @PostMapping
   public ApiResult<UserDto> create(
     @Valid @RequestBody CreateUserRequest body
