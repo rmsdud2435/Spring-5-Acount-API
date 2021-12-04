@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer>{
 
+    public Optional<Account> findById(Integer id);
+
     public Optional<Account> findByIdAndUserId(Integer userId, Integer id);
 
     public int countByUserIdAndStatus(Integer userId, String status);

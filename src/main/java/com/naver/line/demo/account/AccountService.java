@@ -2,10 +2,12 @@ package com.naver.line.demo.account;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+
 import java.util.Optional;
 
 import com.naver.line.demo.account.entities.Account;
 import com.naver.line.demo.common.exceptions.NotFoundException;
+import com.naver.line.demo.common.exceptions.UnauthorizedException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +24,25 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<Account> findById(Integer id) {
+        return accountRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Account shouldFindById(Integer id) {
+        return this.findById(id).orElseThrow(() -> new NotFoundException("계좌를 찾을 수 없음"));
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Account> findByIdAndUserId(Integer userId, Integer id) {
         return accountRepository.findByIdAndUserId(userId, id);
     }
 
     @Transactional(readOnly = true)
     public Account shouldFindByIdAndUserId(Integer userId, Integer id) {
-        return this.findByIdAndUserId(userId, id).orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없음"));
+        return this.findByIdAndUserId(userId, id).orElseThrow(() -> new NotFoundException("계좌를 찾을 수 없음"));
     }
+
 
     public Account create(Integer userId, int transferLimit, int dailyTransferLimit) {
         checkNotNull(userId, "ID는 필수입니다.");
@@ -73,7 +86,19 @@ public class AccountService {
 
     @Transactional
     public Account delete(Integer userId, Integer id) {
-        Account account = this.shouldFindByIdAndUserId(userId, id);
+        Account account = this.shouldFindById(id);
+
+        if(account.getUserId() != userId){
+            throw new UnauthorizedException("본인 소유의 계좌가 아닙니다.");
+        }
+
+        if(account.getStatus().equals("DISABLED")){
+            throw new IllegalArgumentException("이미 삭제된 계좌입니다.");
+        }
+
+        if(account.getAmount() != 0){
+            throw new IllegalArgumentException("계좌에 잔고가 남아 있습니다.");
+        }
 
         account.disable();
 
@@ -94,63 +119,4 @@ public class AccountService {
         return account;
     }
 
-/*
-  @Transactional(readOnly = true)
-  public Optional<User> findById(int id) {
-    return userRepository.findById(id);
-  }
-
-  @Transactional(readOnly = true)
-  public User shouldFindById(int id) {
-    return this.findById(id)
-      .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없음"));
-  }
-
-  @Transactional(readOnly = true)
-  public User validateUserStatusAndGet(int id) {
-    User user = this.userRepository.findById(id)
-      .orElseThrow(() -> new UnauthorizedException("사용자 정보를 찾을 수 없습니다."));
-    if (!user.isEnabled()) {
-      throw new UnauthorizedException("비활성화 된 사용자 정보입니다.");
-    }
-    return user;
-  }
-
-  public User create(String name, String email, String phone, LocalDate birthday) {
-    checkNotNull(name, "이름은 필수입니다.");
-    checkNotNull(email, "이메일은 필수입니다.");
-    checkNotNull(phone, "전화번호는 필수입니다.");
-    checkNotNull(birthday, "생년월일은 필수입니다.");
-
-    User user = new User(name, email, phone, birthday);
-
-    this.userRepository.save(user);
-
-    return user;
-  }
-
-  @Transactional
-  public User update(int id, String name, String email, String phone, LocalDate birthday) {
-    User user = this.shouldFindById(id);
-
-    user.setName(name);
-    user.setEmail(email);
-    user.setPhone(phone);
-    user.setBirthday(birthday);
-
-    this.userRepository.save(user);
-
-    return user;
-  }
-
-  @Transactional
-  public User delete(int id) {
-    User user = this.shouldFindById(id);
-
-    user.disable();
-
-    this.userRepository.save(user);
-
-    return user;
-  } */
 }
