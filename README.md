@@ -176,8 +176,8 @@ Response Body
 ### 2. 계좌 비활성화
 
 - `accounts` 테이블에서 계좌 정보를 가져옵니다.
-- 계좌를 찾을 수 없을 경우 `404 Not Found`으로 응답합니다.
-- 사용자가 계좌의 소유자가 아닌 경우 `403 Forbidden`으로 응답합니다.
+- 계좌를 찾을 수 없을 경우 `404 Not Found`으로 응답합니다. <- NotFoundException
+- 사용자가 계좌의 소유자가 아닌 경우 `403 Forbidden`으로 응답합니다. <-
 - 사용자의 계좌의 상태가 이미 `DISABLED`인 경우 `400 Bad Request`로 응답합니다.
 - 사용자의 계좌의 잔액이 0원이 아닌 경우 `400 Bad Request`로 응답합니다.
 - 사용자의 계좌의 상태값을 `DISABLED`로 저장합니다.

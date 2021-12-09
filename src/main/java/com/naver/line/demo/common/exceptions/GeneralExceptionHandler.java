@@ -84,4 +84,11 @@ public class GeneralExceptionHandler {
     log.error("Unexpected exception occurred: {}", e.getMessage(), e);
     return newResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  //Customize
+  @ExceptionHandler({Exception.class, RuntimeException.class})
+  public ResponseEntity<?> handleForbiddenException(Exception e) {
+    log.error("Unexpected exception occurred: {}", e.getMessage(), e);
+    return newResponse(e, HttpStatus.FORBIDDEN);
+  }
 }
